@@ -1,4 +1,7 @@
-import os, csv, sys, argparse
+import os
+import csv
+import sys
+import argparse
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -12,15 +15,16 @@ from bs4 import BeautifulSoup
 # URLs for YH search results, filtered to "Data/IT" and "sen anmälan".
 SOURCES = {
     "on-site": "https://www.yrkeshogskolan.se/hitta-utbildning/sok/?area=data&latest-filter=clearing&place=12&start=638869248000000000&clearing=1&query=&sort=name",
-    "remote":  "https://www.yrkeshogskolan.se/hitta-utbildning/sok/?area=data&latest-filter=form&start=638869248000000000&clearing=1&form=2&query=&sort=name",
+    "remote": "https://www.yrkeshogskolan.se/hitta-utbildning/sok/?area=data&latest-filter=form&start=638869248000000000&clearing=1&form=2&query=&sort=name",
 }
 
 # Consistent schema for CSV output.
-FIELDS = ["title","provider","start","scope","pace","location","link"]
+FIELDS = ["title", "provider", "start", "scope", "pace", "location", "link"]
 
 # ---------------------------------------------------------------------------
 # HTTP utilities
 # ---------------------------------------------------------------------------
+
 
 def build_headers() -> dict:
     """
@@ -35,6 +39,7 @@ def build_headers() -> dict:
         ua += f"; contact: {contact}"
     return {"User-Agent": ua}
 
+
 def fetch_live(url: str) -> str:
     """
     Fetch the HTML of a YH search page.
@@ -44,9 +49,11 @@ def fetch_live(url: str) -> str:
     resp.raise_for_status()
     return resp.text
 
+
 # ---------------------------------------------------------------------------
 # Parsing logic
 # ---------------------------------------------------------------------------
+
 
 def parse(html: str) -> list[dict]:
     """
@@ -77,20 +84,24 @@ def parse(html: str) -> list[dict]:
             for dt, dd in zip(dl.find_all("dt"), dl.find_all("dd")):
                 details[dt.get_text(strip=True)] = dd.get_text(strip=True)
 
-        programs.append({
-            "title": title,
-            "provider": details.get("Utbildningsanordnare", ""),
-            "start": details.get("Nästa utbildningsstart", ""),
-            "scope": details.get("Omfattning", ""),
-            "pace": details.get("Studietakt", ""),
-            "location": details.get("Studieort", ""),
-            "link": link,
-        })
+        programs.append(
+            {
+                "title": title,
+                "provider": details.get("Utbildningsanordnare", ""),
+                "start": details.get("Nästa utbildningsstart", ""),
+                "scope": details.get("Omfattning", ""),
+                "pace": details.get("Studietakt", ""),
+                "location": details.get("Studieort", ""),
+                "link": link,
+            }
+        )
     return programs
+
 
 # ---------------------------------------------------------------------------
 # CSV utilities
 # ---------------------------------------------------------------------------
+
 
 def write_csv(path: Path, rows: list[dict]) -> None:
     """
@@ -103,6 +114,7 @@ def write_csv(path: Path, rows: list[dict]) -> None:
         w.writeheader()
         w.writerows(rows)
 
+
 def load_csv(path: Path) -> list[dict]:
     """
     Load rows from an existing CSV file, or return empty if none.
@@ -113,9 +125,11 @@ def load_csv(path: Path) -> list[dict]:
     with path.open(encoding="utf-8") as f:
         return list(csv.DictReader(f))
 
+
 # ---------------------------------------------------------------------------
 # Diff logic
 # ---------------------------------------------------------------------------
+
 
 def diff(today_rows: list[dict], y_rows: list[dict]) -> tuple[set, set]:
     """
@@ -126,14 +140,19 @@ def diff(today_rows: list[dict], y_rows: list[dict]) -> tuple[set, set]:
     - Guarantees uniqueness per program.
     - Ignores superficial changes in start date/scope/pace/location.
     """
-    key = lambda r: (r["title"], r["provider"], r["link"])
+
+    def key(row: dict) -> tuple[str, str, str]:
+        return (row["title"], row["provider"], row["link"])
+
     tset = {key(r) for r in today_rows}
     yset = {key(r) for r in y_rows}
     return tset - yset, yset - tset
 
+
 # ---------------------------------------------------------------------------
 # CLI entry point
 # ---------------------------------------------------------------------------
+
 
 def main() -> int:
     """
@@ -142,13 +161,21 @@ def main() -> int:
     - --live: fetch from real website (manual runs only).
     """
     ap = argparse.ArgumentParser(description="Monitor YH ‘sen anmälan’ programs.")
-    ap.add_argument("--live", action="store_true", help="Fetch from the website instead of fixtures.")
-    ap.add_argument("--fixtures", default="fixtures", help="Directory with onsite.html / remote.html")
+    ap.add_argument(
+        "--live",
+        action="store_true",
+        help="Fetch from the website instead of fixtures.",
+    )
+    ap.add_argument(
+        "--fixtures",
+        default="fixtures",
+        help="Directory with onsite.html / remote.html",
+    )
     ap.add_argument("--out", default="data", help="Output directory (default: data)")
     args = ap.parse_args()
 
     today = datetime.now().strftime("%Y%m%d")
-    yday  = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
+    yday = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
     fixtures = Path(args.fixtures)
     out = Path(args.out)
 
@@ -173,12 +200,15 @@ def main() -> int:
             if not added and not removed:
                 print(f"[{key}] No changes.")
             else:
-                for t,p,l in sorted(added):  print(f"[{key}] + {t} by {p} ({l})")
-                for t,p,l in sorted(removed): print(f"[{key}] - {t} by {p} ({l})")
+                for title, provider, link in sorted(added):
+                    print(f"[{key}] + {title} by {provider} ({link})")
+                for title, provider, link in sorted(removed):
+                    print(f"[{key}] - {title} by {provider} ({link})")
         except Exception as e:
             # Print errors to stderr so CI/CD logs clearly show failures.
             print(f"[{key}] ERROR: {e}", file=sys.stderr)
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

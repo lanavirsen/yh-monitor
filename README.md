@@ -7,7 +7,7 @@ I wanted an easy way to track Data/IT programs as *sen anmälan* (late applicati
 The script fetches listings from **yrkeshogskolan.se**, saves them as daily CSV files, and shows what changed since yesterday.
 
 ## Prerequisites
-- Python 3.11+
+- Python 3.10+
 - `pip install -r requirements.txt`
 
 ## Usage

@@ -47,6 +47,15 @@ This repository includes a GitHub Actions workflow:
 - Uses a version matrix to confirm compatibility with Python 3.10, 3.11, and 3.12.
 - Offline mode ensures CI is reproducible and never makes external requests.
 
+## Manual live workflow
+
+In addition to offline tests, the repository includes a **manual GitHub Actions workflow** (“Live scrape”).  
+- The workflow can only be triggered by repository maintainers; it is not accessible to external visitors.  
+- It runs the scraper in `--live` mode against yrkeshogskolan.se.  
+- Results are saved as CSV files and uploaded as workflow artifacts (downloadable ZIPs).  
+- This separation keeps CI/CD runs reproducible and safe, while still allowing ad-hoc live data collection.
+
+
 ## Notes
 
 - The script is for educational/demo purposes.

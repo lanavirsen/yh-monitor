@@ -1,0 +1,25 @@
+name: Live scrape (manual)
+
+on:
+  workflow_dispatch:   # adds the "Run workflow" button in Actions tab
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    env:
+      YH_CONTACT: ${{ secrets.YH_CONTACT }}   # optional contact info
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+
+      - name: Run scraper (live mode)
+        run: python yh_monitor.py --live --out data/
+
+      - name: Upload CSV results
+        uses: actions/upload-artifact@v4
+        with:
+          name: yh-csv-${{ github.run_id }}
+          path: data/**/*.csv

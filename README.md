@@ -37,6 +37,16 @@ $env:YH_CONTACT="name@example.com"
 python yh-monitor.py --live
 ```
 
+## CI/CD
+
+This repository includes a GitHub Actions workflow:
+
+- Runs on every push and pull request.
+- Executes the test suite (`pytest`) against the offline HTML fixtures.
+- Lints code with [`ruff`](https://github.com/astral-sh/ruff) and checks formatting with [`black`](https://github.com/psf/black).
+- Uses a version matrix to confirm compatibility with Python 3.10, 3.11, and 3.12.
+- Offline mode ensures CI is reproducible and never makes external requests.
+
 ## Notes
 
 - The script is for educational/demo purposes.

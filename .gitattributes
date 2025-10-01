@@ -1,0 +1,5 @@
+# Always use LF in the repo, but auto-convert to CRLF on Windows checkout
+*.py     text eol=lf
+*.html   text eol=lf
+*.md     text eol=lf
+*.csv    text eol=lf

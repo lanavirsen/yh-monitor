@@ -3,3 +3,5 @@
 *.html   text eol=lf
 *.md     text eol=lf
 *.csv    text eol=lf
+fixtures/* linguist-vendored
+tests/* linguist-vendored

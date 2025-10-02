@@ -26,6 +26,19 @@ The script writes CSV files into `./data/<category>/<YYYYMMDD>.csv.`
 
 Categories are on-site and remote.
 
+(*In this project, `on-site` refers to programs located in Gothenburg.*)
+
+## Screenshots
+
+**No changes detected**
+
+![No changes](docs/screenshots/no_changes.png)
+
+**Changes detected**
+
+![Changes detected](docs/screenshots/changes.png)
+
+
 ## Optional contact in User-Agent (live mode only)
 
 If you run in **live mode**, you can optionally include a contact in the request headers by setting the environment variable `YH_CONTACT`.
